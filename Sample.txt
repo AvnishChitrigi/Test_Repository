@@ -1,1 +1,50 @@
-Sample test file
+pipeline {
+    agent any
+
+    stages {
+        stage('Run Job1') {
+            steps {
+                script {
+                    // Trigger Job1 and wait for it to complete.
+                    def job1Build = build job: 'Job1', propagate: false, wait: true
+                    if (job1Build.getResult() != 'SUCCESS') {
+                        error("Job1 failed. Stopping the pipeline.")
+                    }
+                }
+            }
+        }
+        stage('Run Job2') {
+            steps {
+                script {
+                    // Trigger Job2 only if Job1 was successful.
+                    def job2Build = build job: 'Job2', propagate: false, wait: true
+                    if (job2Build.getResult() != 'SUCCESS') {
+                        error("Job2 failed. Stopping the pipeline.")
+                    }
+                }
+            }
+        }
+        stage('Run Job3') {
+            steps {
+                script {
+                    // Trigger Job3 only if Job2 was successful.
+                    def job3Build = build job: 'Job3', propagate: false, wait: true
+                    if (job3Build.getResult() != 'SUCCESS') {
+                        error("Job3 failed. Stopping the pipeline.")
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            // Email notification on failure.
+            emailext (
+                subject: "Jenkins Pipeline Failure",
+                body: "The pipeline has failed. Please check the Jenkins console for details.",
+                to: "your.email@example.com"  // Replace with your email address.
+            )
+        }
+    }
+}
