@@ -1,36 +1,44 @@
 pipeline {
-    agent any // This means the pipeline can run on any available agent/node
+    agent any
 
     stages {
         stage('Job 1 - Create JOB_1 Directory') {
             steps {
-                // Using 'mkdir -p' ensures the directory is created if it doesn't exist
-                sh 'mkdir -p JOB_1'
+                // Check if JOB_1 exists; if not, create it.
+                bat 'if not exist JOB_1 mkdir JOB_1'
             }
         }
 
         stage('Job 2 - Create JOB_2 Directory under JOB_1') {
             steps {
-                // Creates JOB_2 inside the JOB_1 folder
-                sh 'mkdir -p JOB_1/JOB_2'
+                // Check if JOB_2 exists under JOB_1; if not, create it.
+                bat 'if not exist JOB_1\\JOB_2 mkdir JOB_1\\JOB_2'
             }
         }
 
-        stage('Job 3 - Create JOB_3 Directory under JOB_1/JOB_2') {
+        stage('Job 3 - Create JOB_3 Directory under JOB_1\\JOB_2') {
             steps {
-                // Creates JOB_3 inside the JOB_1/JOB_2 folder
-                sh 'mkdir -p JOB_1/JOB_2/JOB_3'
+                // Check if JOB_3 exists under JOB_1\\JOB_2; if not, create it.
+                bat 'if not exist JOB_1\\JOB_2\\JOB_3 mkdir JOB_1\\JOB_2\\JOB_3'
             }
         }
     }
 
     post {
-        // The 'failure' block runs if any stage fails, ensuring that subsequent stages aren’t executed.
         failure {
-            // The mail step sends an email notification. Replace 'your-email@example.com' with your actual email.
+            // Send email notification on build failure
             mail to: 'chitrigiavnish@gmail.com',
-                subject: "Build Failed: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
-                body: "Hi,\n\nThe pipeline '${env.JOB_NAME}' has failed at build number ${env.BUILD_NUMBER}. Please check the Jenkins job for details: ${env.BUILD_URL}\n\nRegards,\nJenkins"
+                 subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: """\
+                    Hi Team,
+                    
+                    The pipeline '${env.JOB_NAME}' failed at build #${env.BUILD_NUMBER}.
+                    Please check the Jenkins console output for more details:
+                    ${env.BUILD_URL}
+                    
+                    Regards,
+                    Jenkins
+                 """
         }
     }
 }
