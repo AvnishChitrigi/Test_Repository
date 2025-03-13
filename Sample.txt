@@ -1,50 +1,36 @@
 pipeline {
-    agent any
+    agent any // This means the pipeline can run on any available agent/node
 
     stages {
-        stage('Run Job1') {
+        stage('Job 1 - Create JOB_1 Directory') {
             steps {
-                script {
-                    // Trigger Job1 and wait for it to complete.
-                    def job1Build = build job: 'Job1', propagate: false, wait: true
-                    if (job1Build.getResult() != 'SUCCESS') {
-                        error("Job1 failed. Stopping the pipeline.")
-                    }
-                }
+                // Using 'mkdir -p' ensures the directory is created if it doesn't exist
+                sh 'mkdir -p JOB_1'
             }
         }
-        stage('Run Job2') {
+
+        stage('Job 2 - Create JOB_2 Directory under JOB_1') {
             steps {
-                script {
-                    // Trigger Job2 only if Job1 was successful.
-                    def job2Build = build job: 'Job2', propagate: false, wait: true
-                    if (job2Build.getResult() != 'SUCCESS') {
-                        error("Job2 failed. Stopping the pipeline.")
-                    }
-                }
+                // Creates JOB_2 inside the JOB_1 folder
+                sh 'mkdir -p JOB_1/JOB_2'
             }
         }
-        stage('Run Job3') {
+
+        stage('Job 3 - Create JOB_3 Directory under JOB_1/JOB_2') {
             steps {
-                script {
-                    // Trigger Job3 only if Job2 was successful.
-                    def job3Build = build job: 'Job3', propagate: false, wait: true
-                    if (job3Build.getResult() != 'SUCCESS') {
-                        error("Job3 failed. Stopping the pipeline.")
-                    }
-                }
+                // Creates JOB_3 inside the JOB_1/JOB_2 folder
+                sh 'mkdir -p JOB_1/JOB_2/JOB_3'
             }
         }
     }
 
     post {
+        // The 'failure' block runs if any stage fails, ensuring that subsequent stages aren’t executed.
         failure {
-            // Email notification on failure.
-            emailext (
-                subject: "Jenkins Pipeline Failure",
-                body: "The pipeline has failed. Please check the Jenkins console for details.",
-                to: "your.email@example.com"  // Replace with your email address.
-            )
+            // The mail step sends an email notification. Replace 'your-email@example.com' with your actual email.
+            mail to: 'chitrigiavnish@gmail.com',
+                subject: "Build Failed: ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                body: "Hi,\n\nThe pipeline '${env.JOB_NAME}' has failed at build number ${env.BUILD_NUMBER}. Please check the Jenkins job for details: ${env.BUILD_URL}\n\nRegards,\nJenkins"
         }
     }
 }
