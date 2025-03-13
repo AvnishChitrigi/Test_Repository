@@ -4,38 +4,37 @@ pipeline {
     stages {
         stage('Job 1 - Create JOB_1 Directory') {
             steps {
-                // Check if JOB_1 exists; if not, create it.
                 bat 'if not exist JOB_1 mkdir JOB_1'
             }
         }
-
         stage('Job 2 - Create JOB_2 Directory under JOB_1') {
             steps {
-                // Check if JOB_2 exists under JOB_1; if not, create it.
                 bat 'if not exist JOB_1\\JOB_2 mkdir JOB_1\\JOB_2'
             }
         }
-
         stage('Job 3 - Create JOB_3 Directory under JOB_1\\JOB_2') {
             steps {
-                // Check if JOB_3 exists under JOB_1\\JOB_2; if not, create it.
                 bat 'if not exist JOB_1\\JOB_2\\JOB_3 mkdir JOB_1\\JOB_2\\JOB_3'
+            }
+        }
+        stage('List Directories') {
+            steps {
+                bat 'dir'
             }
         }
     }
 
     post {
         failure {
-            // Send email notification on build failure
-            mail to: 'chitrigiavnish@gmail.com',
+            mail to: 'you@example.com',
                  subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                  body: """\
                     Hi Team,
-                    
+
                     The pipeline '${env.JOB_NAME}' failed at build #${env.BUILD_NUMBER}.
                     Please check the Jenkins console output for more details:
                     ${env.BUILD_URL}
-                    
+
                     Regards,
                     Jenkins
                  """
